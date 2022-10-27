@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -42,21 +43,30 @@ public class CodeChecker implements KeyListener {
         System.out.println("CTRL + SHIFT + ESC for exit\n");
         
         try {
-        	FileInputStream config = new FileInputStream("config.properties");
         	Properties p = new Properties();
-        	p.load(config);
+        	InputStream config = null;
+        	try {
+        		config = new FileInputStream("config.properties");
+        		p.load(config);
+        		System.out.println("config.properties loaded from curr dir");
+        	} catch (Exception e) {
+            	System.out.println("problems loading config.properties from curr dir. try with classpath");
+        		config = CodeChecker.class.getResourceAsStream("/config.properties");
+        		p.load(config);
+        		System.out.println("config.properties loaded from classpath");
+        	}
         	config.close();
         	String passwords = p.getProperty("codes");
         	validPasswords = Arrays.asList(passwords.split(",")).stream().map(x->x.trim()).collect(Collectors.toList());
         	message = p.getProperty("message");
-        } catch (Exception e1) {
-        	System.out.println("problems loading config.properties, uses default");
-        	System.out.println(e1);
+        } catch (Exception e) {
+        	System.out.println("problems loading config.properties, using default values");
+        	System.out.println(e);
         }
         	
         try {
 			Thread.sleep(3000);
-		} catch (InterruptedException e1) {
+		} catch (InterruptedException e) {
 		}
         EventQueue.invokeLater(new Runnable() {
             public void run() {
